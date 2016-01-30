@@ -43,18 +43,25 @@ router.get('/', function(req, res) {
 // more routes for our API will happen here
 router.route('/neurobrainpost')
 
-    // create a bear (accessed at POST http://localhost:8080/api/bears)
     .post(function(req, res) {
       var date = new Date();
-      var heartrate = req.body.heartrate
+      var day = date.getDate();
+      var month = date.getMonth() + 1;
+      var year = date.getFullYear();
+      var hours = date.getHours();
+      var minutes = date.getMinutes();
+      var seconds = date.getSeconds();
+      var date_string = year + '_' + month + '_' + day + '_' + hours + '_' + minutes + '_' + seconds;
+      var meditation = req.body.meditation
+      var delta = req.body.delta
 
-      redis_client.hset(date,"heartrate",heartrate,function(error, result) {
+      redis_client.hmset([date_string,"meditation",meditation,"delta",delta],function(error, result) 	  {
       	if (error)
             res.send(error);
 
         res.json({ message: 'Added instance.' });
-      });	   
         
+      });	   
     });
 
 
