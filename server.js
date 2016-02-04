@@ -52,10 +52,17 @@ router.route('/neurobrainpost')
       var minutes = date.getMinutes();
       var seconds = date.getSeconds();
       var date_string = year + '_' + month + '_' + day + '_' + hours + '_' + minutes + '_' + seconds;
+      var attention = req.body.attention
       var meditation = req.body.meditation
       var delta = req.body.delta
+      var theta = req.body.theta
+      var alpha = req.body.alpha
+      var beta = req.body.beta
+      var gamma = req.body.gamma
 
-      redis_client.hmset([date_string,"meditation",meditation,"delta",delta],function(error, result) 	  {
+      console.log(delta)
+
+      redis_client.hmset([date_string,"attention",attention,"meditation",meditation,"delta",delta,"theta",theta,"alpha",alpha,"beta",beta,"gamma",gamma],function(error, result) 	  {
       	if (error)
             res.send(error);
 
