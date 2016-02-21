@@ -9,6 +9,18 @@ var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var redis = require('redis');
 
+// replace all occurances in a string
+String.prototype.replaceAll = function(target, replacement) {
+  return this.split(target).join(replacement);
+};
+
+// sort on key values
+function sortByKey(array, key) {
+    return array.sort(function(a, b) {
+        return new Date(b[key]) - new Date(a[key])
+    });
+}
+
 // configure app to use bodyParser()
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -55,10 +67,11 @@ router.route('/neurobrainget')
             for (_i = 0, _len = keys.length; _i < _len; _i++) {
 		(function(i) {
       		     redis_client.hgetall(keys[i], function(err, obj) {
-        	          objects.push({key:keys[i],obj});
+        	          objects.push({key:keys[i].replaceAll('_',':'),obj});
         	          seen++;
         	          if (seen == _len) {
-          	             return res.end(JSON.stringify(objects));
+			     var sorted = sortByKey(objects, 'key')
+          	             return res.end(JSON.stringify(sorted.slice(0,10)));
        		          }
       	    	     })
 		})(_i)
@@ -80,7 +93,7 @@ router.route('/neurobrainpost')
       var hours = date.getHours();
       var minutes = date.getMinutes();
       var seconds = date.getSeconds();
-      var date_string = year + '_' + month + '_' + day + '_' + hours + '_' + minutes + '_' + seconds;
+      var date_string = year + '-' + month + '-' + day + ' ' + hours + '_' + minutes + '_' + seconds;
       var attention = req.body.attention
       var meditation = req.body.meditation
       var delta = req.body.delta
@@ -97,7 +110,7 @@ router.route('/neurobrainpost')
       console.log("beta: " + beta)
       console.log("gamma:" + gamma)
 
-      redis_client.hmset(["input:" + date_string,"attention",attention,"meditation",meditation,"delta",delta,"theta",theta,"alpha",alpha,"beta",beta,"gamma",gamma],function(error, result) 	  {
+      redis_client.hmset([date_string,"attention",attention,"meditation",meditation,"delta",delta,"theta",theta,"alpha",alpha,"beta",beta,"gamma",gamma],function(error, result) 	  {
       	if (error)
             res.send(error);
 
