@@ -8,6 +8,8 @@ var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var redis = require('redis');
+var MongoClient = require('mongodb').MongoClient
+  , assert = require('assert');
 
 // replace all occurances in a string
 String.prototype.replaceAll = function(target, replacement) {
@@ -70,14 +72,46 @@ router.route('/neurobrainget')
         	          objects.push({key:keys[i].replaceAll('_',':'),obj});
         	          seen++;
         	          if (seen == _len) {
+
 			     var sorted = sortByKey(objects, 'key')
-          	             return res.end(JSON.stringify(sorted.slice(0,10)));
+			    
+			     // Offload Redis data to Mongo
+
+			     // Create insert document 
+			     var insertDocuments = function(db, callback) {
+        		     // Get the documents collection
+        		     var collection = db.collection('brainpoststats');
+        		     // Insert some documents
+        		     collection.insertMany(sorted.reverse(), function(err, result) {
+                		   assert.equal(err, null);
+                		   console.log("Inserted objects")
+                		   callback(result);
+           			});  
+        		    }
+				
+			    // Connect to Mongo and insert data
+			    var url = 'mongodb://localhost:27017/brainpost';
+        		    MongoClient.connect(url, function(err, db) {
+          			assert.equal(null, err);
+          			console.log("Connected correctly to server");
+				insertDocuments(db, function() {
+      				   db.close();
+  				});
+        		    });
+				
+				// Clear data from Redis
+				redis_client.flushall( function (didSucceed) {
+        			   console.log(didSucceed); // true
+    				});
+
+				return res.end(JSON.stringify(sorted));
+
        		          }
       	    	     })
 		})(_i)
 		
     	    } 
-	});     
+	});
     });
     
 
