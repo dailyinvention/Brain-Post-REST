@@ -11,5 +11,9 @@
   "dependencies": {
     "express": "^4.13.3",
     "body-parser": "~1.0.1"
+  },
+  "devDependencies": {
+    "debug-log": "^1.0.1",
+    "standard": "^11.0.1"
   }
 }
