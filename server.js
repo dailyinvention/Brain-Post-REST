@@ -114,6 +114,7 @@ router.route('/neurobrainget').get((req, res) => {
 // Post brain stats
 
 router.route('/neurobrainpost').post((req, res) => {
+  console.log('Request: ' + req)
   let date = new Date()
   let day = date.getDate()
   let month = date.getMonth() + 1
