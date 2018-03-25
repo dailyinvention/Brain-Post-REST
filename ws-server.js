@@ -19,11 +19,10 @@ let connections = []
 
 // On web socket connection
 wss.on('connection', function connection (ws, req) {
-  // Get the client id from the url params
+  // Get the client id from the url params.
   let clientID = parseInt(url.parse(req.url, true).query.clientID)
+  // Store socket connection in array based off of id value.
   connections[clientID] = ws
-
-  console.log(clientID)
 
   // When web socket connects, build message.
   ws.on('message', function incoming (message) {
