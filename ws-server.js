@@ -2,15 +2,8 @@ const express = require('express')
 const http = require('http')
 const url = require('url')
 const WebSocket = require('ws')
-const redis = require('redis')
 
 const app = express()
-
-// Include Redis client.
-const redisClient = redis.createClient()
-redisClient.on('connect', () => {
-  console.log('redis connected')
-})
 
 app.use(function (req, res) {
   res.send({ msg: 'hello' })
@@ -26,15 +19,13 @@ let connections = []
 
 // On web socket connection
 wss.on('connection', function connection (ws, req) {
-  // const location = url.parse(req.url, true)
+  // Get the client id from the url params
   let clientID = parseInt(url.parse(req.url, true).query.clientID)
   connections[clientID] = ws
 
   console.log(clientID)
-  // You might use location.query.access_token to authenticate or share sessions
-  // or req.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
 
-  // When web socket receives message, create object and store in Redis.
+  // When web socket connects, build message.
   ws.on('message', function incoming (message) {
     let messageObj = JSON.parse(message)
     let date = new Date()
@@ -54,9 +45,10 @@ wss.on('connection', function connection (ws, req) {
       beta: messageObj.beta,
       gamma: messageObj.gamma
     }
-
+    // Only display output by millisecond.
     if (newMessageObj.date !== lastJSON.date) {
       lastJSON = newMessageObj
+      // Check to see if client is first connection defined in params.  If so, send message.
       if (connections[1]) {
         connections[1].send(JSON.stringify(newMessageObj))
         console.log('newMessageObj: ' + JSON.stringify(newMessageObj))
