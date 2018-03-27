@@ -35,6 +35,7 @@ wss.on('connection', function connection (ws, req) {
     let minutes = date.getMinutes()
     let seconds = date.getSeconds()
     let newMessageObj = {
+      id: date.getTime(),
       date: year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds,
       attention: messageObj.attention,
       meditation: messageObj.meditation,
@@ -44,13 +45,14 @@ wss.on('connection', function connection (ws, req) {
       beta: messageObj.beta,
       gamma: messageObj.gamma
     }
+    console.log('newMessageObj: ' + JSON.stringify(newMessageObj))
     // Only display output by millisecond.
     if (newMessageObj.date !== lastJSON.date) {
       lastJSON = newMessageObj
       // Check to see if client is first connection defined in params.  If so, send message.
       if (connections[1]) {
         connections[1].send(JSON.stringify(newMessageObj))
-        console.log('newMessageObj: ' + JSON.stringify(newMessageObj))
+        
       }
     }
   })
